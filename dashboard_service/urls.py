@@ -32,7 +32,7 @@ schema_view = get_tenant_schema_view(
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
     ),
-    path="/api/",
+    path="/dashboard/api/",
     public=True,
     permission_classes=[permissions.AllowAny],
 )
@@ -47,13 +47,13 @@ def health_check(_):
 urlpatterns = [
     # docs
     re_path(
-        r"^docs/$",
+        r"^dashboard/docs/$",
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
     # health
-    path("api/health", health_check),
+    path("dashboard/api/health", health_check),
     # admin
-    path("admin/", admin.site.urls),
+    path("dashboard/admin/", admin.site.urls),
     # apis
 ]
