@@ -45,4 +45,5 @@ urlpatterns = [
     path("dashboard/admin/", admin.site.urls),
     # apis
     path("auth/api/", include("device_state.urls")),
+    path("auth/api/", include("dashboard.urls")),
 ]
