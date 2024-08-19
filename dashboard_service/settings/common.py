@@ -30,6 +30,7 @@ SHARED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_yasg",
+    "django_filters",
     "common.apps.organization",
     "common.apps.celery_autoreload",
 ]
@@ -41,6 +42,7 @@ TENANT_APPS = [
     "common.apps.organization_role",
     "common.apps.space",
     "common.apps.space_role",
+    "device_state",
 ]
 
 INSTALLED_APPS = SHARED_APPS + [app for app in TENANT_APPS if app not in SHARED_APPS]
