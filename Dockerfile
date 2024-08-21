@@ -1,5 +1,5 @@
 FROM python:3.10-alpine
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
 ARG ENV
 ARG SECRET_KEY
@@ -24,11 +24,11 @@ RUN pip install ../pkg
 # Adds our application code to the image
 COPY ./dashboard_service dashboard_service
 
-WORKDIR dashboard_service
+WORKDIR /dashboard_service
 
 EXPOSE 80
 
-ENV DJANGO_SETTINGS_MODULE "dashboard_service.settings.production"
+ENV DJANGO_SETTINGS_MODULE="dashboard_service.settings.production"
 
 ENV ENV=${ENV}
 ENV SECRET_KEY=${SECRET_KEY}
