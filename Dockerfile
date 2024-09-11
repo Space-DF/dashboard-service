@@ -15,15 +15,15 @@ ARG CELERY_BROKER_URL
 ARG JWK_URL
 
 # Allows docker to cache installed dependencies between builds
-COPY ./dashboard_service/requirements.txt requirements.txt
+COPY ./dashboard-service/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-COPY ./pkg pkg
-RUN pip install ../pkg
+COPY ./django-common-utils django-common-utils
+RUN pip install ../django-common-utils
 
 # Adds our application code to the image
-COPY ./dashboard_service dashboard_service
+COPY ./dashboard-service dashboard-service
 
-WORKDIR /dashboard_service
+WORKDIR /dashboard-service
 
 EXPOSE 80
 
