@@ -39,7 +39,6 @@ TENANT_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "common.apps.organization_user",
-    "common.apps.organization_role",
     "common.apps.space",
     "common.apps.space_role",
     "device_state",
@@ -182,7 +181,6 @@ CLONE_MODELS = [
 CELERY_TASKS = [
     "common.apps.organization",
     "common.apps.organization_user",
-    "common.apps.organization_role",
     "common.apps.space",
     "common.apps.space_role",
 ]
