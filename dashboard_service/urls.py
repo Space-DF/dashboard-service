@@ -44,6 +44,6 @@ urlpatterns = [
     # admin
     path("dashboard/admin/", admin.site.urls),
     # apis
-    path("auth/api/", include("device_state.urls")),
-    path("auth/api/", include("dashboard.urls")),
+    path("dashboard/api/", include("device_state.urls")),
+    path("dashboard/api/", include("dashboard.urls")),
 ]
