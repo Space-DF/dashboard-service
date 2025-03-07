@@ -1,4 +1,4 @@
-from dashboard.models import Dashboard, Widget
+from apps.dashboard.models import Dashboard, Widget
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 

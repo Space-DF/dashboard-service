@@ -1,4 +1,4 @@
-from device_state.models import (
+from apps.device_state.models import (
     DailyDeviceState,
     HourlyDeviceState,
     MinutelyDeviceState,

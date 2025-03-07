@@ -1,4 +1,4 @@
-from dashboard.views import (
+from apps.dashboard.views import (
     ListCreateDashboardView,
     ListCreateWidgetView,
     UpdateDeleteDashboardView,

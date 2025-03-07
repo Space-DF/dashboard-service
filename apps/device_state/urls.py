@@ -1,4 +1,4 @@
-from device_state.views import (
+from apps.device_state.views import (
     ListDailyDeviceStateView,
     ListHourlyDeviceStateView,
     ListMinutelyDeviceStateView,

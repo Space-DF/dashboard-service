@@ -18,7 +18,6 @@ from common.swagger.views import get_tenant_schema_view
 from django.contrib import admin
 from django.urls import include, path, re_path
 from drf_yasg import openapi
-from rest_framework import permissions
 
 schema_view = get_tenant_schema_view(
     openapi.Info(
@@ -30,7 +29,6 @@ schema_view = get_tenant_schema_view(
     ),
     path="/dashboard/api/",
     public=True,
-    permission_classes=[permissions.AllowAny],
 )
 
 
@@ -41,9 +39,7 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    # admin
-    path("dashboard/admin/", admin.site.urls),
     # apis
-    path("dashboard/api/", include("device_state.urls")),
-    path("dashboard/api/", include("dashboard.urls")),
+    path("dashboard/api/", include("apps.device_state.urls")),
+    path("dashboard/api/", include("apps.dashboard.urls")),
 ]

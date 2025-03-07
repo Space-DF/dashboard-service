@@ -27,7 +27,7 @@ WORKDIR /dashboard-service
 
 EXPOSE 80
 
-ENV DJANGO_SETTINGS_MODULE="dashboard_service.settings.production"
+ENV DJANGO_SETTINGS_MODULE="dashboard_service.settings"
 
 ENV ENV=${ENV}
 ENV SECRET_KEY=${SECRET_KEY}

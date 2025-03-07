@@ -19,7 +19,6 @@ from django.db import connection
 from django.http import HttpResponse
 from django.urls import path, re_path
 from drf_yasg import openapi
-from rest_framework import permissions
 
 from .celery import app as celery_app
 
@@ -33,7 +32,6 @@ schema_view = get_tenant_schema_view(
     ),
     path="/dashboard/api/",
     public=True,
-    permission_classes=[permissions.AllowAny],
 )
 
 

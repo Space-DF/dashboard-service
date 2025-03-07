@@ -18,8 +18,20 @@ SERVICE_NAME = "dashboard"
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Application definition
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+DEBUG = os.getenv("ENV", default="dev") == "dev"
 
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "django-insecure-*$0b8ibx7uzk45cm+fxw7*jj(yzi2ye!l4+!dnyxa-u-nbuz=q"
+)
+
+ALLOWED_HOSTS = [os.getenv("ALLOWED_HOSTS", "*")]
+
+HOST = os.getenv("HOST", "http://localhost:8000/")
+DEFAULT_TENANT_HOST = os.getenv("DEFAULT_TENANT_HOST", "localhost")
+
+# Application definition
 SHARED_APPS = [
     "django_tenants",
     "django.contrib.contenttypes",
@@ -36,13 +48,10 @@ SHARED_APPS = [
 ]
 
 TENANT_APPS = [
-    "django.contrib.admin",
     "django.contrib.auth",
-    "common.apps.organization_user",
     "common.apps.space",
-    "common.apps.space_role",
-    "device_state",
-    "dashboard",
+    "apps.device_state",
+    "apps.dashboard",
 ]
 
 INSTALLED_APPS = SHARED_APPS + [app for app in TENANT_APPS if app not in SHARED_APPS]
@@ -55,7 +64,6 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "common.middlewares.query_alert_middleware.QueryAlertMiddleware",
@@ -72,7 +80,6 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
         },
@@ -81,49 +88,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "dashboard_service.wsgi.application"
 
+# Database
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+DATABASES = {
+    "default": {
+        "ENGINE": "django_tenants.postgresql_backend",
+        "NAME": os.getenv("DB_NAME", "spacedf_dashboard_service"),
+        "USER": os.getenv("DB_USERNAME", "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": "5432",
+    }
+}
+
 DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
-
-
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
 STATIC_URL = "/dashboard/static/"
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "<app_name>/static"),
     os.path.join(BASE_DIR, "static"),
@@ -131,29 +122,18 @@ STATICFILES_DIRS = (
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Rest framework option
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
     "EXCEPTION_HANDLER": "common.errors.exception_handler.custom_exception_handler",
 }
-
-# auth config
-AUTH_USER_MODEL = "organization_user.OrganizationUser"
-
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 # Docs
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
-        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
+        "User ID": {"type": "apiKey", "name": "X-User-ID", "in": "header"},
+        "Space": {"type": "apiKey", "name": "X-Space", "in": "header"}
     }
 }
 
@@ -168,22 +148,21 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_ACKS_LATE = True
 CELERYD_PREFETCH_MULTIPLIER = 1
 CELERY_APP = "dashboard_service.celery.app"
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL", "amqp://guest:guest@localhost"
+)
 CLONE_MODELS = [
-    "organizationuser",
-    "organizationpolicy",
-    "organizationrole",
-    "organizationroleuser",
     "space",
-    "spacepolicy",
-    "spacerole",
-    "spaceroleuser",
 ]
 CELERY_TASKS = [
     "common.apps.organization",
-    "common.apps.organization_user",
     "common.apps.space",
-    "common.apps.space_role",
 ]
 
 # Middlewares
 PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static"]
+
+# CORS config
+CORS_ALLOWED_ORIGINS = os.getenv(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:3000"
+).split(",")

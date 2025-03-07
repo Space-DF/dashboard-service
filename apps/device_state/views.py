@@ -1,12 +1,12 @@
 from common.pagination.base_pagination import BasePagination
 from common.views.space import SpaceListAPIView
-from device_state.models import (
+from apps.device_state.models import (
     DailyDeviceState,
     HourlyDeviceState,
     MinutelyDeviceState,
     MonthlyDeviceState,
 )
-from device_state.serializers import (
+from apps.device_state.serializers import (
     DailyDeviceStateSerializer,
     HourlyDeviceStateSerializer,
     MinutelyDeviceStateSerializer,

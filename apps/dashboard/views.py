@@ -1,7 +1,7 @@
 from common.pagination.base_pagination import BasePagination
 from common.views.space import SpaceListCreateAPIView, SpaceRetrieveUpdateDestroyAPIView
-from dashboard.models import Dashboard, Widget
-from dashboard.serializers import DashboardSerializer, WidgetSerializer
+from apps.dashboard.models import Dashboard, Widget
+from apps.dashboard.serializers import DashboardSerializer, WidgetSerializer
 from rest_framework.filters import OrderingFilter, SearchFilter
 
 
