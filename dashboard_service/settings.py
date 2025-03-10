@@ -133,7 +133,7 @@ REST_FRAMEWORK = {
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "User ID": {"type": "apiKey", "name": "X-User-ID", "in": "header"},
-        "Space": {"type": "apiKey", "name": "X-Space", "in": "header"}
+        "Space": {"type": "apiKey", "name": "X-Space", "in": "header"},
     }
 }
 
@@ -148,9 +148,7 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_ACKS_LATE = True
 CELERYD_PREFETCH_MULTIPLIER = 1
 CELERY_APP = "dashboard_service.celery.app"
-CELERY_BROKER_URL = os.getenv(
-    "CELERY_BROKER_URL", "amqp://guest:guest@localhost"
-)
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@localhost")
 CLONE_MODELS = [
     "space",
 ]
@@ -163,6 +161,6 @@ CELERY_TASKS = [
 PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static"]
 
 # CORS config
-CORS_ALLOWED_ORIGINS = os.getenv(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:3000"
-).split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(
+    ","
+)

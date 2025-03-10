@@ -9,7 +9,7 @@
 
 ---
 
-# SpaceDF Dashboard
+# SpaceDF Dashboard Service
 
 ## Prerequisites
 - Python 3.10

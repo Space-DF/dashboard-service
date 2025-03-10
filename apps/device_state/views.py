@@ -1,5 +1,8 @@
 from common.pagination.base_pagination import BasePagination
 from common.views.space import SpaceListAPIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+
 from apps.device_state.models import (
     DailyDeviceState,
     HourlyDeviceState,
@@ -12,8 +15,6 @@ from apps.device_state.serializers import (
     MinutelyDeviceStateSerializer,
     MonthlyDeviceStateSerializer,
 )
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
 
 
 class ListDeviceStateView(SpaceListAPIView):

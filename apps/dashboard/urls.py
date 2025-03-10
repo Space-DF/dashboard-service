@@ -1,10 +1,11 @@
+from django.urls import path
+
 from apps.dashboard.views import (
     ListCreateDashboardView,
     ListCreateWidgetView,
     UpdateDeleteDashboardView,
     UpdateDeleteWidgetView,
 )
-from django.urls import path
 
 app_name = "dashboard"
 

@@ -1,10 +1,11 @@
+from django.contrib import admin
+
 from apps.device_state.models import (
     DailyDeviceState,
     HourlyDeviceState,
     MinutelyDeviceState,
     MonthlyDeviceState,
 )
-from django.contrib import admin
 
 
 class DeviceStateAdmin(admin.ModelAdmin):

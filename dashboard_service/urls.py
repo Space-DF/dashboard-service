@@ -15,7 +15,6 @@ Including another URLconf
 """
 
 from common.swagger.views import get_tenant_schema_view
-from django.contrib import admin
 from django.urls import include, path, re_path
 from drf_yasg import openapi
 
