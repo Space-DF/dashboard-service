@@ -30,7 +30,7 @@ schema_view = get_tenant_schema_view(
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
     ),
-    path="/dashboard/api/",
+    path="/api/",
     public=True,
 )
 
@@ -49,5 +49,5 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     # health
-    path("dashboard/api/health", health_check),
+    path("api/health", health_check),
 ]

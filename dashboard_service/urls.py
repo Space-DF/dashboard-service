@@ -26,7 +26,7 @@ schema_view = get_tenant_schema_view(
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
     ),
-    path="/dashboard/api/",
+    path="/api/",
     public=True,
 )
 
@@ -39,6 +39,6 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     # apis
-    path("dashboard/api/", include("apps.device_state.urls")),
-    path("dashboard/api/", include("apps.dashboard.urls")),
+    path("api/", include("apps.device_state.urls")),
+    path("api/", include("apps.dashboard.urls")),
 ]
