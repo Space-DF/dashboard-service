@@ -1,10 +1,11 @@
-from device_state.views import (
+from django.urls import path
+
+from apps.device_state.views import (
     ListDailyDeviceStateView,
     ListHourlyDeviceStateView,
     ListMinutelyDeviceStateView,
     ListMonthlyDeviceStateView,
 )
-from django.urls import path
 
 app_name = "device_state"
 

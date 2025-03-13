@@ -1,10 +1,11 @@
-from device_state.models import (
+from rest_framework import serializers
+
+from apps.device_state.models import (
     DailyDeviceState,
     HourlyDeviceState,
     MinutelyDeviceState,
     MonthlyDeviceState,
 )
-from rest_framework import serializers
 
 
 class MinutelyDeviceStateSerializer(serializers.ModelSerializer):

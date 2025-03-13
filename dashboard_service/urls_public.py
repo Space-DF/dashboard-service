@@ -19,7 +19,6 @@ from django.db import connection
 from django.http import HttpResponse
 from django.urls import path, re_path
 from drf_yasg import openapi
-from rest_framework import permissions
 
 from .celery import app as celery_app
 
@@ -31,9 +30,8 @@ schema_view = get_tenant_schema_view(
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
     ),
-    path="/dashboard/api/",
+    path="/api/",
     public=True,
-    permission_classes=[permissions.AllowAny],
 )
 
 
@@ -51,5 +49,5 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     # health
-    path("dashboard/api/health", health_check),
+    path("api/health", health_check),
 ]
