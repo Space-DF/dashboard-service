@@ -35,15 +35,23 @@ class WidgetSerializer(serializers.ModelSerializer):
 class UpdateWidgetListSerializer(serializers.ListSerializer):
     def update(self, instances, validated_data):
         instance_map = {instance.pk: instance for instance in instances}
-        data_updated = []
+        fields_to_update = set()
+        updated_instances = []
 
         for item in validated_data:
-            id = item.get("id")
-            instance = instance_map[id]
-            data = {key: value for key, value in item.items() if key != "id"}
-            self.child.update(instance, data)
-            data_updated.append(instance)
-        return data_updated
+            instance = instance_map[item["id"]]
+            widget_updates = {key: value for key, value in item.items() if key != "id"}
+
+            for key, value in widget_updates.items():
+                setattr(instance, key, value)
+
+            fields_to_update.update(widget_updates.keys())
+            updated_instances.append(instance)
+
+        if updated_instances:
+            Widget.objects.bulk_update(updated_instances, list(fields_to_update))
+
+        return updated_instances
 
 
 class UpdateWidgetSerializer(serializers.ModelSerializer):

@@ -75,7 +75,7 @@ class BulkUpdateWidgetView(SpaceUpdateAPIView):
         request_body=UpdateWidgetSerializer(many=True),
         responses={200: UpdateWidgetSerializer(many=True)},
     )
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         serializer = self.get_serializer(many=True, data=request.data)
         serializer.is_valid(raise_exception=True)
 
