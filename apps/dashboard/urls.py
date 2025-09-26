@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.dashboard.views import (
+    BulkUpdateWidgetView,
     ListCreateDashboardView,
     ListCreateWidgetView,
     UpdateDeleteDashboardView,
@@ -25,5 +26,9 @@ urlpatterns = [
     path(
         "dashboards/<str:dashboard_id>/widgets/<str:id>",
         UpdateDeleteWidgetView.as_view(),
+    ),
+    path(
+        "widgets/bulk-update",
+        BulkUpdateWidgetView.as_view(),
     ),
 ]

@@ -19,10 +19,9 @@ class DashboardSerializer(serializers.ModelSerializer):
 class WidgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Widget
-        fields = "__all__"
+        fields = ["id", "configuration", "created_at", "updated_at"]
         extra_kwargs = {
             "id": {"read_only": True},
-            "dashboard": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
         }
@@ -31,3 +30,38 @@ class WidgetSerializer(serializers.ModelSerializer):
         dashboard_id = self.context.get("view").kwargs.get("dashboard_id")
         validated_data["dashboard"] = get_object_or_404(Dashboard, pk=dashboard_id)
         return super(WidgetSerializer, self).create(validated_data)
+
+
+class UpdateWidgetListSerializer(serializers.ListSerializer):
+    def update(self, instances, validated_data):
+        instance_map = {instance.pk: instance for instance in instances}
+        fields_to_update = set()
+        updated_instances = []
+
+        for item in validated_data:
+            instance = instance_map[item["id"]]
+            widget_updates = {key: value for key, value in item.items() if key != "id"}
+
+            for key, value in widget_updates.items():
+                setattr(instance, key, value)
+
+            fields_to_update.update(widget_updates.keys())
+            updated_instances.append(instance)
+
+        if updated_instances:
+            Widget.objects.bulk_update(updated_instances, list(fields_to_update))
+
+        return updated_instances
+
+
+class UpdateWidgetSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+
+    class Meta:
+        model = Widget
+        fields = ["id", "configuration"]
+        list_serializer_class = UpdateWidgetListSerializer
+
+    def update(self, instance, validated_data):
+        validated_data.pop("id", None)
+        return super().update(instance, validated_data)
