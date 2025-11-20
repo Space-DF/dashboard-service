@@ -41,4 +41,5 @@ urlpatterns = [
     # apis
     path("api/", include("apps.device_state.urls")),
     path("api/", include("apps.dashboard.urls")),
+    path("api/", include("apps.device_entity.urls"))
 ]

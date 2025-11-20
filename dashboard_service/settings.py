@@ -52,6 +52,7 @@ TENANT_APPS = [
     "common.apps.space",
     "apps.device_state",
     "apps.dashboard",
+    "apps.device_entity",
 ]
 
 INSTALLED_APPS = SHARED_APPS + [app for app in TENANT_APPS if app not in SHARED_APPS]
