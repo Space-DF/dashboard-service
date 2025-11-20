@@ -20,5 +20,5 @@ class ListDeviceEntitiesView(generics.ListAPIView):
     serializer_class = DeviceEntitiesSerializer
     pagination_class = BasePagination
     filter_backends = (DjangoFilterBackend, OrderingFilter)
-    filterset_fields = ("entity_type_id",) # I think here it should be type name
+    filterset_fields = ("entity_type_id",)  # I think here it should be type name
     ordering_fields = ("name", "widget_type")

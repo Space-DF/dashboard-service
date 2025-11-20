@@ -6,44 +6,73 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('dashboard', '0001_initial'),
+        ("dashboard", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EntityType',
+            name="EntityType",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=256)),
-                ('description', models.TextField()),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                        unique=True,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=256)),
+                ("description", models.TextField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='DeviceEntity',
+            name="DeviceEntity",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=256)),
-                ('url', models.TextField()),
-                ('config', models.JSONField()),
-                ('unit', models.CharField(max_length=256)),
-                ('enabled', models.BooleanField(default=True)),
-                ('widget_type', models.CharField(max_length=256)),
-                ('widget_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dashboard.widget')),
-                ('entity_type_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='device_entity.entitytype')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                        unique=True,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=256)),
+                ("url", models.TextField()),
+                ("config", models.JSONField()),
+                ("unit", models.CharField(max_length=256)),
+                ("enabled", models.BooleanField(default=True)),
+                ("widget_type", models.CharField(max_length=256)),
+                (
+                    "widget_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="dashboard.widget",
+                    ),
+                ),
+                (
+                    "entity_type_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="device_entity.entitytype",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]
