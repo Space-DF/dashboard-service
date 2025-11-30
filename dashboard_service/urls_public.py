@@ -49,5 +49,5 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     # health
-    path("api/health", health_check),
+    path("dashboard/api/health", health_check),
 ]
