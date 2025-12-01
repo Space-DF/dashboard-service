@@ -14,6 +14,7 @@ ARG DEFAULT_TENANT_HOST
 ARG CELERY_BROKER_URL
 
 # Allows docker to cache installed dependencies between builds
+RUN apk add build-base libffi-dev curl
 COPY ./dashboard-service/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 COPY ./django-common-utils django-common-utils
