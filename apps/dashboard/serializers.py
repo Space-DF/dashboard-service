@@ -1,7 +1,11 @@
+from common.utils.telemetry_client import TelemetryServiceClient
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
 from apps.dashboard.models import Dashboard, Widget
+from apps.dashboard.services import validate_widget_configuration
+
+telemetry_client = TelemetryServiceClient()
 
 
 class DashboardSerializer(serializers.ModelSerializer):
@@ -19,12 +23,56 @@ class DashboardSerializer(serializers.ModelSerializer):
 class WidgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Widget
-        fields = ["id", "configuration", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "display_type",
+            "entity_id",
+            "x",
+            "y",
+            "width",
+            "height",
+            "configuration",
+            "created_at",
+            "updated_at",
+        ]
         extra_kwargs = {
             "id": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
         }
+
+    def validate(self, data):
+        display_type = data.get("display_type")
+        configuration = data.get("configuration") or {}
+        validate_widget_configuration(display_type, configuration)
+        return data
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        try:
+            request = self.context.get("request")
+
+            if request.tenant.slug_name:
+                config = instance.configuration or {}
+                start_time = config.get("start_time")
+                end_time = config.get("end_time")
+                group_by = config.get("group_by")
+
+                data["data"] = telemetry_client.get_widget_data(
+                    entity_id=instance.entity_id,
+                    display_type=instance.display_type,
+                    organization_slug=request.tenant.slug_name,
+                    start_time=start_time,
+                    end_time=end_time,
+                    group_by=group_by,
+                )
+            else:
+                data["data"] = {}
+        except Exception as e:
+            data["data"] = {"error": str(e)}
+
+        return data
 
     def create(self, validated_data):
         dashboard_id = self.context.get("view").kwargs.get("dashboard_id")
@@ -59,8 +107,28 @@ class UpdateWidgetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Widget
-        fields = ["id", "configuration"]
+        fields = [
+            "id",
+            "x",
+            "y",
+            "width",
+            "height",
+            "configuration",
+        ]
         list_serializer_class = UpdateWidgetListSerializer
+
+    def validate(self, data):
+        instance = self.instance
+        if instance and hasattr(instance, "display_type"):
+            display_type = instance.display_type
+        else:
+            return data
+
+        configuration = (
+            data.get("configuration") or getattr(instance, "configuration", {}) or {}
+        )
+        validate_widget_configuration(display_type, configuration)
+        return data
 
     def update(self, instance, validated_data):
         validated_data.pop("id", None)
