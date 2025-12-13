@@ -157,6 +157,9 @@ CELERY_TASKS = [
     "common.apps.space",
 ]
 
+# Telemetry Service Configuration
+TELEMETRY_SERVICE_URL = os.getenv("TELEMETRY_SERVICE_URL", "http://telemetry:8080")
+
 # Middlewares
 PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static"]
 
