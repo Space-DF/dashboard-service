@@ -11,6 +11,7 @@ class DisplayType(models.TextChoices):
     HISTOGRAM_TYPE = "histogram"
     TABLE_TYPE = "table"
 
+
 class WidgetPeriod(models.TextChoices):
     HOUR = "hour"
     DAY = "day"

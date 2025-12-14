@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
 from apps.dashboard.models import Dashboard, Widget
-from apps.dashboard.services import validate_widget_configuration, calculate_time_range
+from apps.dashboard.services import calculate_time_range, validate_widget_configuration
 
 telemetry_client = TelemetryServiceClient()
 
@@ -55,11 +55,7 @@ class WidgetSerializer(serializers.ModelSerializer):
 
             if request.tenant.slug_name:
                 config = instance.configuration or {}
-                
-                # Calculate time range based on configuration
-                # Returns (start_time, end_time) as ISO format strings
                 start_time, end_time = calculate_time_range(config)
-
                 data["data"] = telemetry_client.get_widget_data(
                     entity_id=instance.entity_id,
                     display_type=instance.display_type,
