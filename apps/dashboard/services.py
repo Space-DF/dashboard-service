@@ -3,31 +3,35 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.dashboard.contants import WidgetPeriod
+from apps.dashboard.contants import DisplayType, WidgetPeriod
 
 
-def validate_widget_configuration(configuration):
-    start_time = configuration.get("start_time")
-    end_time = configuration.get("end_time")
-    period = configuration.get("period")
+def validate_widget_configuration(display_type, configuration):
+    series_types = [
+        DisplayType.CHART_TYPE,
+        DisplayType.HISTOGRAM_TYPE,
+    ]
+    if display_type in series_types:
+        start_time = configuration.get("start_time")
+        end_time = configuration.get("end_time")
+        period = configuration.get("period")
+        has_time_range = bool(start_time) or bool(end_time)
+        has_period = bool(period)
 
-    has_time_range = bool(start_time) or bool(end_time)
-    has_period = bool(period)
-
-    if has_time_range and has_period:
-        raise serializers.ValidationError(
-            "Cannot provide both start_time/end_time and period"
-        )
-
-    if has_time_range:
-        if not (bool(start_time) and bool(end_time)):
+        if has_time_range and has_period:
             raise serializers.ValidationError(
-                "Both start_time and end_time must be provided together"
+                "Cannot provide both start_time/end_time and period"
             )
-    elif not has_period:
-        raise serializers.ValidationError(
-            "Must provide either start_time/end_time or period"
-        )
+
+        if has_time_range:
+            if not (bool(start_time) and bool(end_time)):
+                raise serializers.ValidationError(
+                    "Both start_time and end_time must be provided together"
+                )
+        elif not has_period:
+            raise serializers.ValidationError(
+                "Must provide either start_time/end_time or period"
+            )
 
 
 def calculate_time_range(configuration):
