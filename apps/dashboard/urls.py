@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.dashboard.views import (
+    BulkCreateWidgetView,
     BulkUpdateWidgetView,
     ListCreateDashboardView,
     ListCreateWidgetView,
@@ -16,8 +17,12 @@ urlpatterns = [
         ListCreateDashboardView.as_view(),
     ),
     path(
-        "dashboards/<str:id>",
-        UpdateDeleteDashboardView.as_view(),
+        "dashboards/<str:dashboard_id>/widgets/bulk-create",
+        BulkCreateWidgetView.as_view(),
+    ),
+    path(
+        "dashboards/<str:dashboard_id>/widgets/bulk-update",
+        BulkUpdateWidgetView.as_view(),
     ),
     path(
         "dashboards/<str:dashboard_id>/widgets",
@@ -28,7 +33,7 @@ urlpatterns = [
         UpdateDeleteWidgetView.as_view(),
     ),
     path(
-        "widgets/bulk-update",
-        BulkUpdateWidgetView.as_view(),
+        "dashboards/<str:id>",
+        UpdateDeleteDashboardView.as_view(),
     ),
 ]

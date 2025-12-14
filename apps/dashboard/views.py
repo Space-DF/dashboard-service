@@ -92,3 +92,22 @@ class BulkUpdateWidgetView(SpaceUpdateAPIView):
             serializer.save()
 
         return Response(serializer.data, status=200)
+
+
+class BulkCreateWidgetView(SpaceListCreateAPIView):
+    model = Widget
+    serializer_class = WidgetSerializer
+    queryset = Widget.objects.all()
+    space_field = "dashboard__space"
+    http_method_names = ["post"]
+
+    @swagger_auto_schema(
+        request_body=WidgetSerializer(many=True),
+        responses={201: WidgetSerializer(many=True)},
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(many=True, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            serializer.save()
+        return Response(serializer.data, status=201)
