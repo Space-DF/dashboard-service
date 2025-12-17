@@ -50,7 +50,6 @@ SHARED_APPS = [
 TENANT_APPS = [
     "django.contrib.auth",
     "common.apps.space",
-    "apps.device_state",
     "apps.dashboard",
 ]
 
