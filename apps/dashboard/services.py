@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.dashboard.contants import DisplayType, WidgetPeriod
+from apps.dashboard.constants import DisplayType, WidgetPeriod
 
 
 def validate_widget_configuration(display_type, configuration):

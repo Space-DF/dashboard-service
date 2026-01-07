@@ -1,3 +1,5 @@
+import logging
+
 from common.utils.telemetry_client import TelemetryServiceClient
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
@@ -5,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 from apps.dashboard.models import Dashboard, Widget
 from apps.dashboard.services import calculate_time_range, validate_widget_configuration
 
+logger = logging.getLogger(__name__)
 telemetry_client = TelemetryServiceClient()
 
 
@@ -54,6 +57,9 @@ class WidgetSerializer(serializers.ModelSerializer):
             request = self.context.get("request")
 
             if request.tenant.slug_name:
+                logger.info(
+                    f"Fetching telemetry data for widget: {instance.id}, organization: {request.tenant.slug_name}"
+                )
                 config = instance.configuration or {}
                 start_time, end_time = calculate_time_range(config)
                 data["data"] = telemetry_client.get_widget_data(
@@ -63,17 +69,35 @@ class WidgetSerializer(serializers.ModelSerializer):
                     start_time=start_time,
                     end_time=end_time,
                 )
+                logger.info(
+                    f"Successfully fetched telemetry data for widget: {instance.id}"
+                )
             else:
+                logger.warning("Organization slug_name is empty")
                 data["data"] = {}
         except Exception as e:
-            data["data"] = {"error": str(e)}
+            logger.exception(
+                f"Unexpected error fetching widget data for {instance.id}: {str(e)}"
+            )
+            data["data"] = None
 
         return data
 
     def create(self, validated_data):
         dashboard_id = self.context.get("view").kwargs.get("dashboard_id")
-        validated_data["dashboard"] = get_object_or_404(Dashboard, pk=dashboard_id)
-        return super(WidgetSerializer, self).create(validated_data)
+        try:
+            validated_data["dashboard"] = get_object_or_404(Dashboard, pk=dashboard_id)
+            widget = super(WidgetSerializer, self).create(validated_data)
+            logger.info(
+                f"Successfully created widget: {widget.id} in dashboard: {dashboard_id}"
+            )
+            return widget
+        except Exception as e:
+            logger.error(
+                f"Failed to create widget in dashboard {dashboard_id}: {str(e)}",
+                exc_info=True,
+            )
+            raise
 
 
 class UpdateWidgetListSerializer(serializers.ListSerializer):
@@ -93,7 +117,14 @@ class UpdateWidgetListSerializer(serializers.ListSerializer):
             updated_instances.append(instance)
 
         if updated_instances:
-            Widget.objects.bulk_update(updated_instances, list(fields_to_update))
+            try:
+                Widget.objects.bulk_update(updated_instances, list(fields_to_update))
+                logger.info(
+                    f"Successfully bulk updated {len(updated_instances)} widgets with fields: {list(fields_to_update)}"
+                )
+            except Exception as e:
+                logger.error(f"Failed to bulk update widgets: {str(e)}", exc_info=True)
+                raise
 
         return updated_instances
 
