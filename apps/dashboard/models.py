@@ -2,7 +2,7 @@ from common.apps.space.models import Space
 from common.models.base_model import BaseModel
 from django.db import models
 
-from apps.dashboard.contants import DisplayType
+from apps.dashboard.constants import DisplayType
 
 
 class Dashboard(BaseModel):
