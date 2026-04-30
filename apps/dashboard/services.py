@@ -1,9 +1,24 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework import serializers
 
 from apps.dashboard.constants import DisplayType, WidgetPeriod
+
+
+def _normalize_boundary_time(value, *, is_end: bool = False):
+    parsed_date = parse_date(value)
+    if parsed_date:
+        boundary = time(23, 59, 59, 999999) if is_end else time(0, 0, 0)
+        dt = datetime.combine(parsed_date, boundary)
+        return timezone.make_aware(dt)
+
+    parsed_datetime = parse_datetime(value)
+    if parsed_datetime:
+        return parsed_datetime
+
+    raise serializers.ValidationError(f"Invalid datetime format: {value}")
 
 
 def validate_widget_configuration(display_type, configuration):
@@ -39,7 +54,9 @@ def calculate_time_range(configuration):
     end_time = configuration.get("end_time")
 
     if start_time and end_time:
-        return start_time, end_time
+        start = _normalize_boundary_time(start_time)
+        end = _normalize_boundary_time(end_time, is_end=True)
+        return start.isoformat(), end.isoformat()
 
     period = configuration.get("period")
     now = timezone.now()
