@@ -14,10 +14,9 @@ telemetry_client = TelemetryServiceClient()
 class DashboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dashboard
-        fields = "__all__"
+        fields = ["id", "name", "created_at", "updated_at"]
         extra_kwargs = {
             "id": {"read_only": True},
-            "space": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
         }
