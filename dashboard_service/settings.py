@@ -58,6 +58,7 @@ SHARED_APPS = [
     "corsheaders",
     "drf_yasg",
     "django_filters",
+    "common.apps.migrate_smart",
     "common.apps.organization",
     "common.apps.celery_autoreload",
 ]
@@ -202,6 +203,6 @@ PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static", "/silk/dashboard"]
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(
     ","
 )
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", "http://localhost:3000"
-).split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(
+    ","
+)
