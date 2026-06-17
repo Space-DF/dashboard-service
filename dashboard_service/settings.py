@@ -101,6 +101,7 @@ if SILK_ENABLED:
     SILKY_MAX_RESPONSE_BODY_SIZE = 0
     SILKY_META = True
     SILKY_INTERCEPT_PERCENT = 10
+    SILKY_MAX_RECORDED_REQUESTS = 500
     SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
 
 ROOT_URLCONF = "dashboard_service.urls"
@@ -201,3 +202,6 @@ PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static", "/silk/dashboard"]
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(
     ","
 )
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS", "http://localhost:3000"
+).split(",")
