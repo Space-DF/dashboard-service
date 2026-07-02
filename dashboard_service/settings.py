@@ -44,6 +44,7 @@ ALLOWED_HOSTS = [os.getenv("ALLOWED_HOSTS", "*")]
 
 HOST = os.getenv("HOST", "http://localhost:8000/")
 DEFAULT_TENANT_HOST = os.getenv("DEFAULT_TENANT_HOST", "localhost")
+SILK_ENABLED = os.getenv("ENV", "dev").lower() == "dev"
 
 # Application definition
 SHARED_APPS = [
@@ -57,9 +58,13 @@ SHARED_APPS = [
     "corsheaders",
     "drf_yasg",
     "django_filters",
+    "common.apps.migrate_smart",
     "common.apps.organization",
     "common.apps.celery_autoreload",
 ]
+
+if SILK_ENABLED:
+    SHARED_APPS.append("silk")
 
 TENANT_APPS = [
     "django.contrib.auth",
@@ -81,6 +86,24 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "common.middlewares.query_alert_middleware.QueryAlertMiddleware",
 ]
+
+if SILK_ENABLED:
+    MIDDLEWARE.insert(3, "silk.middleware.SilkyMiddleware")
+
+    def silky_intercept_func(request):
+        return request.path.startswith("/api/")
+
+    SILKY_INTERCEPT_FUNC = silky_intercept_func
+    SILKY_AUTHENTICATION = False
+    SILKY_AUTHORISATION = False
+    SILKY_PYTHON_PROFILER = True
+    SILKY_PYTHON_PROFILER_BINARY = False
+    SILKY_MAX_REQUEST_BODY_SIZE = 1024
+    SILKY_MAX_RESPONSE_BODY_SIZE = 0
+    SILKY_META = True
+    SILKY_INTERCEPT_PERCENT = 10
+    SILKY_MAX_RECORDED_REQUESTS = 500
+    SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
 
 ROOT_URLCONF = "dashboard_service.urls"
 
@@ -174,9 +197,12 @@ CELERY_TASKS = [
 TELEMETRY_SERVICE_URL = os.getenv("TELEMETRY_SERVICE_URL", "http://telemetry:8080")
 
 # Middlewares
-PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static"]
+PUBLIC_PATHS = ["/api/.well-known", "/docs", "/static", "/silk/dashboard"]
 
 # CORS config
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(
+    ","
+)
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(
     ","
 )
