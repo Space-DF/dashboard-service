@@ -1,3 +1,4 @@
+from common.apps.billing.mixins import QuotaMixin
 from common.pagination.base_pagination import BasePagination
 from common.views.space import (
     SpaceListCreateAPIView,
@@ -10,6 +11,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
 from apps.dashboard.models import Dashboard, Widget
+from apps.dashboard.quotas import DashboardQuota
 from apps.dashboard.serializers import (
     DashboardSerializer,
     UpdateWidgetSerializer,
@@ -17,7 +19,7 @@ from apps.dashboard.serializers import (
 )
 
 
-class ListCreateDashboardView(SpaceListCreateAPIView):
+class ListCreateDashboardView(QuotaMixin, SpaceListCreateAPIView):
     model = Dashboard
     serializer_class = DashboardSerializer
     queryset = Dashboard.objects.all()
@@ -26,14 +28,16 @@ class ListCreateDashboardView(SpaceListCreateAPIView):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["created_at"]
     search_fields = ["name"]
+    quota_classes = [DashboardQuota]
 
 
-class UpdateDeleteDashboardView(SpaceRetrieveUpdateDestroyAPIView):
+class UpdateDeleteDashboardView(QuotaMixin, SpaceRetrieveUpdateDestroyAPIView):
     model = Dashboard
     serializer_class = DashboardSerializer
     lookup_field = "id"
     queryset = Dashboard.objects.all()
     space_field = "space"
+    quota_classes = [DashboardQuota]
 
 
 class ListCreateWidgetView(SpaceListCreateAPIView):
