@@ -191,6 +191,7 @@ CLONE_MODELS = [
 CELERY_TASKS = [
     "common.apps.organization",
     "common.apps.space",
+    "apps.dashboard",
 ]
 
 # Telemetry Service Configuration
