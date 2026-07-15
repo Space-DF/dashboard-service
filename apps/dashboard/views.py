@@ -1,3 +1,4 @@
+from common.apps.billing.mixins import QuotaMixin
 from common.pagination.base_pagination import BasePagination
 from common.views.space import (
     SpaceListCreateAPIView,
@@ -37,6 +38,7 @@ class UpdateDeleteDashboardView(QuotaMixin, SpaceRetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     queryset = Dashboard.objects.all()
     space_field = "space"
+    quota_classes = [DashboardQuota]
 
 
 class ListCreateWidgetView(SpaceListCreateAPIView):

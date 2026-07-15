@@ -9,13 +9,12 @@ RUN apk add --no-cache \
 
 WORKDIR /install
 
-# install private repo
-RUN --mount=type=secret,id=github_token \
-    pip install --no-cache-dir --prefix=/install \
-    git+https://$(cat /run/secrets/github_token)@github.com/Space-DF/django-common-utils.git@dev
+# install private repo from local directory
+COPY django-common-utils /install/django-common-utils
+RUN pip install --no-cache-dir --prefix=/install /install/django-common-utils
 
 # install python requirements
-COPY requirements.txt .
+COPY dashboard-service/requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.10-alpine
@@ -31,7 +30,7 @@ WORKDIR /app
 
 # copy installed python packages
 COPY --from=builder /install /usr/local
-COPY . .
+COPY dashboard-service .
 
 RUN ["chmod", "+x", "./docker-entrypoint.sh"]
 
