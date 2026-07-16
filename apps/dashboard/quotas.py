@@ -2,7 +2,8 @@ from common.apps.billing.mixins import BaseQuota
 
 
 class DashboardQuota(BaseQuota):
-    reserve_actions = {"create", "destroy"}
+    reserve_actions = {"create"}
+    release_actions = {"destroy"}
     rules = {
         "create": "dashboard.max_count",
         "destroy": "dashboard.max_count",
