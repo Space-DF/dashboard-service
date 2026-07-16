@@ -8,6 +8,7 @@ from apps.dashboard.constants import DisplayType
 class Dashboard(BaseModel):
     name = models.CharField(max_length=256)
     space = models.ForeignKey(Space, related_name="dashboard", on_delete=models.CASCADE)
+    is_deactivated = models.BooleanField(default=False)
 
 
 class Widget(BaseModel):
