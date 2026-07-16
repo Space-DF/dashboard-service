@@ -15,30 +15,17 @@ logger = logging.getLogger(__name__)
     max_retries=3,
 )
 def dashboard_downgrade_task(**kwargs):
-    return deactivate_excess_dashboards(kwargs["org_slug"], kwargs.get("limits"))
-
-
-@task(
-    name="spacedf.tasks.dashboard_upgrade",
-    autoretry_for=(Exception,),
-    retry_backoff=2,
-    max_retries=3,
-)
-def dashboard_upgrade_task(**kwargs):
-    return reactivate_dashboards(kwargs["org_slug"])
-
-
-def deactivate_excess_dashboards(organization_slug: str, limits: dict = None) -> int:
-    limits = limits or {}
+    org_slug = kwargs["org_slug"]
+    limits = kwargs.get("limits") or {}
     max_dashboards = limits.get("dashboard.max_count")
     if max_dashboards is None:
         logger.warning(
             "Skipping dashboard deactivation for %s: dashboard.max_count not in event",
-            organization_slug,
+            org_slug,
         )
         return 0
 
-    with schema_context(organization_slug):
+    with schema_context(org_slug):
         dashboards = Dashboard.objects.filter(is_deactivated=False).order_by(
             "created_at"
         )
@@ -54,18 +41,22 @@ def deactivate_excess_dashboards(organization_slug: str, limits: dict = None) ->
                 "Downgrade: deactivated %s excess dashboards for org %s "
                 "(kept %s active out of %s total).",
                 count,
-                organization_slug,
-                min(len(dashboards), max_dashboards),
-                len(dashboards),
+                org_slug,
+                min(dashboards.count(), max_dashboards),
+                dashboards.count(),
             )
         return count
 
 
-def reactivate_dashboards(organization_slug: str) -> int:
-    """
-    Reactivate dashboards that were deactivated during a prior downgrade.
-    """
-    with schema_context(organization_slug):
+@task(
+    name="spacedf.tasks.dashboard_upgrade",
+    autoretry_for=(Exception,),
+    retry_backoff=2,
+    max_retries=3,
+)
+def dashboard_upgrade_task(**kwargs):
+    org_slug = kwargs["org_slug"]
+    with schema_context(org_slug):
         count = Dashboard.objects.filter(is_deactivated=True).update(
             is_deactivated=False
         )
@@ -73,6 +64,6 @@ def reactivate_dashboards(organization_slug: str) -> int:
             logger.info(
                 "Renewal: reactivated %s dashboards for org %s.",
                 count,
-                organization_slug,
+                org_slug,
             )
         return count
