@@ -28,11 +28,24 @@ def dashboard_downgrade_task(**kwargs):
         return 0
 
     with schema_context(org_slug):
-        dashboards = Dashboard.objects.filter(is_deactivated=False).order_by(
-            "created_at"
+        # 1. fetch all active dashboards ordered by space, then created_at
+        # 2. one bulk update of the collected excess ids.
+        rows = list(
+            Dashboard.objects.filter(is_deactivated=False)
+            .values_list("id", "space_id")
+            .order_by("space_id", "created_at")
         )
+        excess_ids = []
+        seen_space = None
+        space_count = 0
+        for dashboard_id, space_id in rows:
+            if space_id != seen_space:
+                seen_space = space_id
+                space_count = 0
+            space_count += 1
+            if space_count > max_dashboards:
+                excess_ids.append(dashboard_id)
 
-        excess_ids = list(dashboards.values_list("id", flat=True)[max_dashboards:])
         count = (
             Dashboard.objects.filter(id__in=excess_ids).update(is_deactivated=True)
             if excess_ids
@@ -41,11 +54,10 @@ def dashboard_downgrade_task(**kwargs):
         if count:
             logger.info(
                 "Downgrade: deactivated %s excess dashboards for org %s "
-                "(kept %s active out of %s total).",
+                "(space limit %s).",
                 count,
                 org_slug,
-                min(dashboards.count(), max_dashboards),
-                dashboards.count(),
+                max_dashboards,
             )
         return count
 
