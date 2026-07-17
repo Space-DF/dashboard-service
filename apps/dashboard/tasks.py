@@ -1,5 +1,6 @@
 import logging
 
+from common.apps.billing.constants import FeatureCode
 from common.celery.tasks import task
 from django_tenants.utils import schema_context
 
@@ -17,11 +18,12 @@ logger = logging.getLogger(__name__)
 def dashboard_downgrade_task(**kwargs):
     org_slug = kwargs["org_slug"]
     limits = kwargs.get("limits") or {}
-    max_dashboards = limits.get("dashboard.max_count")
+    max_dashboards = limits.get(FeatureCode.DASHBOARD_MAX_COUNT)
     if max_dashboards is None:
         logger.warning(
-            "Skipping dashboard deactivation for %s: dashboard.max_count not in event",
+            "Skipping dashboard deactivation for %s: %s not in event",
             org_slug,
+            FeatureCode.DASHBOARD_MAX_COUNT,
         )
         return 0
 
