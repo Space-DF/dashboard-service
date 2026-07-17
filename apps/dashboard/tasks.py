@@ -1,5 +1,6 @@
 import logging
 
+from common.apps.billing.constants import FeatureCode
 from common.celery.tasks import task
 from django_tenants.utils import schema_context
 
@@ -17,20 +18,34 @@ logger = logging.getLogger(__name__)
 def dashboard_downgrade_task(**kwargs):
     org_slug = kwargs["org_slug"]
     limits = kwargs.get("limits") or {}
-    max_dashboards = limits.get("dashboard.max_count")
+    max_dashboards = limits.get(FeatureCode.DASHBOARD_MAX_COUNT)
     if max_dashboards is None:
         logger.warning(
-            "Skipping dashboard deactivation for %s: dashboard.max_count not in event",
+            "Skipping dashboard deactivation for %s: %s not in event",
             org_slug,
+            FeatureCode.DASHBOARD_MAX_COUNT,
         )
         return 0
 
     with schema_context(org_slug):
-        dashboards = Dashboard.objects.filter(is_deactivated=False).order_by(
-            "created_at"
+        # 1. fetch all active dashboards ordered by space, then created_at
+        # 2. one bulk update of the collected excess ids.
+        rows = list(
+            Dashboard.objects.filter(is_deactivated=False)
+            .values_list("id", "space_id")
+            .order_by("space_id", "created_at")
         )
+        excess_ids = []
+        seen_space = None
+        space_count = 0
+        for dashboard_id, space_id in rows:
+            if space_id != seen_space:
+                seen_space = space_id
+                space_count = 0
+            space_count += 1
+            if space_count > max_dashboards:
+                excess_ids.append(dashboard_id)
 
-        excess_ids = list(dashboards.values_list("id", flat=True)[max_dashboards:])
         count = (
             Dashboard.objects.filter(id__in=excess_ids).update(is_deactivated=True)
             if excess_ids
@@ -39,11 +54,10 @@ def dashboard_downgrade_task(**kwargs):
         if count:
             logger.info(
                 "Downgrade: deactivated %s excess dashboards for org %s "
-                "(kept %s active out of %s total).",
+                "(space limit %s).",
                 count,
                 org_slug,
-                min(dashboards.count(), max_dashboards),
-                dashboards.count(),
+                max_dashboards,
             )
         return count
 
