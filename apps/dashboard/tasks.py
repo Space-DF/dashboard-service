@@ -27,6 +27,8 @@ def dashboard_downgrade_task(**kwargs):
         )
         return 0
 
+    downgraded_at = kwargs.get("downgraded_at")
+
     with schema_context(org_slug):
         # 1. fetch all active dashboards ordered by space, then created_at
         # 2. one bulk update of the collected excess ids.
@@ -47,7 +49,9 @@ def dashboard_downgrade_task(**kwargs):
                 excess_ids.append(dashboard_id)
 
         count = (
-            Dashboard.objects.filter(id__in=excess_ids).update(is_deactivated=True)
+            Dashboard.objects.filter(id__in=excess_ids).update(
+                is_deactivated=True, deactivated_at=downgraded_at
+            )
             if excess_ids
             else 0
         )
@@ -72,7 +76,7 @@ def dashboard_upgrade_task(**kwargs):
     org_slug = kwargs["org_slug"]
     with schema_context(org_slug):
         count = Dashboard.objects.filter(is_deactivated=True).update(
-            is_deactivated=False
+            is_deactivated=False, deactivated_at=None
         )
         if count:
             logger.info(
