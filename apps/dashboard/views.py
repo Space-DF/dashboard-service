@@ -1,3 +1,4 @@
+from common.apps.billing.mixins import QuotaMixin
 from common.pagination.base_pagination import BasePagination
 from common.views.space import (
     SpaceListCreateAPIView,
@@ -10,6 +11,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
 from apps.dashboard.models import Dashboard, Widget
+from apps.dashboard.quotas import DashboardQuota
 from apps.dashboard.serializers import (
     DashboardSerializer,
     UpdateWidgetSerializer,
@@ -17,7 +19,7 @@ from apps.dashboard.serializers import (
 )
 
 
-class ListCreateDashboardView(SpaceListCreateAPIView):
+class ListCreateDashboardView(QuotaMixin, SpaceListCreateAPIView):
     model = Dashboard
     serializer_class = DashboardSerializer
     queryset = Dashboard.objects.all()
@@ -26,14 +28,17 @@ class ListCreateDashboardView(SpaceListCreateAPIView):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["created_at"]
     search_fields = ["name"]
+    quota_classes = [DashboardQuota]
 
 
-class UpdateDeleteDashboardView(SpaceRetrieveUpdateDestroyAPIView):
+class UpdateDeleteDashboardView(QuotaMixin, SpaceRetrieveUpdateDestroyAPIView):
     model = Dashboard
     serializer_class = DashboardSerializer
     lookup_field = "id"
     queryset = Dashboard.objects.all()
     space_field = "space"
+    quota_classes = [DashboardQuota]
+    deactivation = ["dashboard", "space"]
 
 
 class ListCreateWidgetView(SpaceListCreateAPIView):
@@ -43,6 +48,7 @@ class ListCreateWidgetView(SpaceListCreateAPIView):
     space_field = "dashboard__space"
     filter_backends = [OrderingFilter]
     ordering_fields = ["created_at"]
+    deactivation = ["dashboard", "dashboard.space"]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -57,6 +63,7 @@ class UpdateDeleteWidgetView(SpaceRetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     queryset = Widget.objects.all()
     space_field = "dashboard__space"
+    deactivation = ["dashboard", "dashboard.space"]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -70,6 +77,7 @@ class BulkUpdateWidgetView(SpaceUpdateAPIView):
     queryset = Widget.objects.all()
     space_field = "dashboard__space"
     http_method_names = ["put"]
+    deactivation = ["dashboard", "dashboard.space"]
 
     @swagger_auto_schema(
         request_body=UpdateWidgetSerializer(many=True),
@@ -83,6 +91,8 @@ class BulkUpdateWidgetView(SpaceUpdateAPIView):
         queryset = self.filter_queryset(self.get_queryset()).filter(id__in=ids)
         by_id = {value.id: value for value in queryset}
         instances = [by_id[id] for id in ids]
+        for instance in instances:
+            self.check_deactivated_object(instance)
 
         serializer = self.get_serializer(
             instances, data=serializer.validated_data, many=True
@@ -100,6 +110,7 @@ class BulkCreateWidgetView(SpaceListCreateAPIView):
     queryset = Widget.objects.all()
     space_field = "dashboard__space"
     http_method_names = ["post"]
+    deactivation = ["dashboard", "dashboard.space"]
 
     @swagger_auto_schema(
         request_body=WidgetSerializer(many=True),
