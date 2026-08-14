@@ -1,12 +1,16 @@
 import logging
 
 from common.apps.billing.constants import FeatureCode
-from common.celery.tasks import task
+from common.celery.tasks import PermanentTaskError, task
 from django_tenants.utils import schema_context
 
 from apps.dashboard.models import Dashboard
 
 logger = logging.getLogger(__name__)
+
+
+def _is_unlimited(kwargs, feature_code):
+    return feature_code in set(kwargs.get("unlimited_features") or [])
 
 
 @task(
@@ -20,12 +24,15 @@ def dashboard_downgrade_task(**kwargs):
     limits = kwargs.get("limits") or {}
     max_dashboards = limits.get(FeatureCode.DASHBOARD_MAX_COUNT)
     if max_dashboards is None:
-        logger.warning(
-            "Skipping dashboard deactivation for %s: %s not in event",
-            org_slug,
-            FeatureCode.DASHBOARD_MAX_COUNT,
+        raise PermanentTaskError(
+            "dashboard downgrade requires limit %s for org %s"
+            % (FeatureCode.DASHBOARD_MAX_COUNT, org_slug)
         )
-        return 0
+    if max_dashboards < 0:
+        raise PermanentTaskError(
+            "dashboard downgrade limit %s must be >= 0 for org %s"
+            % (FeatureCode.DASHBOARD_MAX_COUNT, org_slug)
+        )
 
     downgraded_at = kwargs.get("downgraded_at")
 
@@ -74,10 +81,53 @@ def dashboard_downgrade_task(**kwargs):
 )
 def dashboard_upgrade_task(**kwargs):
     org_slug = kwargs["org_slug"]
-    with schema_context(org_slug):
-        count = Dashboard.objects.filter(is_deactivated=True).update(
-            is_deactivated=False, deactivated_at=None
+    limits = kwargs.get("limits") or {}
+    max_dashboards = limits.get(FeatureCode.DASHBOARD_MAX_COUNT)
+    unlimited_dashboards = _is_unlimited(kwargs, FeatureCode.DASHBOARD_MAX_COUNT)
+    if max_dashboards is None and not unlimited_dashboards:
+        raise PermanentTaskError(
+            "dashboard upgrade requires limit or explicit unlimited feature %s for org %s"
+            % (FeatureCode.DASHBOARD_MAX_COUNT, org_slug)
         )
+    if max_dashboards is not None and max_dashboards < 0:
+        raise PermanentTaskError(
+            "dashboard upgrade limit %s must be >= 0 for org %s"
+            % (FeatureCode.DASHBOARD_MAX_COUNT, org_slug)
+        )
+
+    with schema_context(org_slug):
+        if max_dashboards is None:
+            count = Dashboard.objects.filter(is_deactivated=True).update(
+                is_deactivated=False, deactivated_at=None
+            )
+        else:
+            active_counts = {}
+            for dashboard_id, space_id in (
+                Dashboard.objects.filter(is_deactivated=False)
+                .values_list("id", "space_id")
+                .order_by("space_id", "created_at")
+            ):
+                active_counts[space_id] = active_counts.get(space_id, 0) + 1
+
+            reactivated_ids = []
+            for dashboard_id, space_id in (
+                Dashboard.objects.filter(is_deactivated=True)
+                .values_list("id", "space_id")
+                .order_by("space_id", "created_at")
+            ):
+                space_active_count = active_counts.get(space_id, 0)
+                if space_active_count >= max_dashboards:
+                    continue
+                reactivated_ids.append(dashboard_id)
+                active_counts[space_id] = space_active_count + 1
+
+            count = (
+                Dashboard.objects.filter(id__in=reactivated_ids).update(
+                    is_deactivated=False, deactivated_at=None
+                )
+                if reactivated_ids
+                else 0
+            )
         if count:
             logger.info(
                 "Renewal: reactivated %s dashboards for org %s.",
