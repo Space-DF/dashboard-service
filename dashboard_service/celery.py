@@ -24,6 +24,19 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 setup_organization_task_routing()
 setup_synchronous_model_task_routing()
-setup_subscription_task_routing(["dashboard_downgrade", "dashboard_upgrade"])
+setup_subscription_task_routing(
+    [
+        {
+            "task_name": "dashboard_downgrade",
+            "service": "dashboard",
+            "lifecycle": "downgrade",
+        },
+        {
+            "task_name": "dashboard_upgrade",
+            "service": "dashboard",
+            "lifecycle": "upgrade",
+        },
+    ]
+)
 
 app.autodiscover_tasks(settings.CELERY_TASKS)
